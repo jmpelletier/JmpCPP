@@ -32,6 +32,13 @@ namespace JMP
 {
 	namespace Audio {
 
+#ifdef JMP_64_BIT_AUDIO
+		using sample_t = double;
+#else
+		using sample_t = float;
+#endif
+
+		const sample_t SPEED_OF_SOUND = 343;
 
 		// Convert float samples to integer PCM (without dithering).
 		template <typename T>
