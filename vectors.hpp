@@ -8,6 +8,7 @@
 
 #include <type_traits>
 #include <cmath>
+#include <random>
 
 namespace JMP
 {
@@ -26,6 +27,13 @@ namespace JMP
 
         static Vector2 AngleMagnitude(T angleRadians, T magnitude) {
             return Vector2(std::cos(angleRadians) * magnitude, std::sin(angleRadians) * magnitude);
+        }
+
+        template <class Generator>
+        static Vector2 Random(Generator & generator, T length = 1) {
+            std::uniform_real_distribution<T> distribution (0.0, M_PI * 2);
+            const T theta = distribution(generator);
+            return Vector2(std::cos(theta) * length, std::sin(theta) * length);
         }
 
         Vector2() : _x(0), _y(0) {}
@@ -72,13 +80,12 @@ namespace JMP
             *this = this->normalized();
         }
 
-        void translate(T dx, T dy) {
-            _x += dx;
-            _y += dy;
+        Vector2 translate(T dx, T dy) const {
+            return translate(Vector2(dx, dy));
         }
 
-        void translate(Vector2 const& delta) {
-            translate(delta._x, delta._y);
+        Vector2 translate(Vector2 const& delta) const {
+            return *this + delta;
         }
 
         Vector2 operator+(Vector2 const & v) const {
@@ -110,6 +117,10 @@ namespace JMP
             return vn * dot(vn);
         }
 
+        Vector2 project_on(Vector2 const & v) const {
+            return projection(v);
+        }
+
         Vector2 reflect(Vector2 const & normal) const {
             const T dot_prod = dot(normal);
             const Vector2 proj = normal * dot_prod;
@@ -118,6 +129,45 @@ namespace JMP
 
         Vector2 rotate(T radians) const {
             return Vector2::AngleMagnitude(angle() + radians, magnitude());
+        }
+
+        bool isNaN() const {
+            return std::isnan(_x) || std::isnan(_y);
+        }
+    };
+
+    template <typename T>
+    class Ray2 {
+    private:
+        Vector2<T> _position;
+        Vector2<T> _direction;
+        T _length;
+    public:
+        Ray2() : _position(), _direction(1, 0), _length(0) {}
+        Ray2(Vector2<T> const & position, Vector2<T> const & direction) : _position(position), _direction(direction), _length(0) {}
+
+        const Vector2<T>& position() const { return _position; }
+        const Vector2<T>& direction() const { return _direction; }
+        T length() const { return _length; }
+
+        void move(T distance) {
+            _position = _position.translate(_direction * distance);
+            _length += distance;
+        }
+
+        void reflect(Vector2<T> const & normal) {
+            _direction = _direction.reflect(normal);
+        }
+
+        Vector2<T> intersect_circle(Vector2<T> const & origin, T radius) {
+            Vector2<T> U = origin - _position;
+            Vector2<T> U1 = U.project_on(_direction);
+            Vector2<T> U2 = U - U1;
+            T d = U2.magnitude();
+            T m = std::sqrt(radius * radius - d * d);
+            Vector2<T> p = _position + U1 + _direction * m;
+
+            return p;
         }
     };
 }
