@@ -155,10 +155,20 @@ namespace JMP
             _length += distance;
         }
 
+        // Move ray to target position. Both position and direction are updated.
+        void move_to(Vector2<T> const & target) {
+            Vector2<T> delta = target - _position;
+            _direction = target.normalized();
+            _position = target;
+            _length += delta.magnitude();
+        }
+
         void reflect(Vector2<T> const & normal) {
             _direction = _direction.reflect(normal);
         }
 
+        // Returns the closest point on a circle that intersects the ray.
+        // Returns a NaN vector if there is no intersection.
         Vector2<T> intersect_circle(Vector2<T> const & origin, T radius) {
             Vector2<T> U = origin - _position;
             Vector2<T> U1 = U.project_on(_direction);
