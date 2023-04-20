@@ -25,13 +25,30 @@ namespace JMP
         static Vector2 Right() { return Vector2(1, 0); }
         static Vector2 Left() { return Vector2(-1, 0); }
 
+        // Creates a vector with the given angle in radians and magnitude.
         static Vector2 AngleMagnitude(T angleRadians, T magnitude) {
             return Vector2(std::cos(angleRadians) * magnitude, std::sin(angleRadians) * magnitude);
         }
 
-        template <class Generator>
-        static Vector2 Random(Generator & generator, T length = 1) {
-            std::uniform_real_distribution<T> distribution (0.0, M_PI * 2);
+        // Generate a vector pointing in a random direction with a fixed length.
+        // Usage:
+        //
+        // std::random_device random_device;
+        // std::minstd_rand0 generator(random_device());
+        // std::uniform_real_distribution<sample_t> distribution (-M_PI, M_PI);
+        // Vector2<float> random_vector = Vector2<float>::Random(generator, distribution);
+        // 
+        // Using a normal distribution:
+        //
+        // float angle_radians = 1.2f;
+        // float angle_std_dev = 0.3f;
+        // std::random_device random_device;
+        // std::minstd_rand0 generator(random_device());
+        // std::normal_distribution<sample_t> distribution {angle_radians, angle_std_dev};
+        // Vector2<float> random_vector = Vector2<float>::Random(generator, distribution);
+        //
+        template <class Generator, class Distribution>
+        static Vector2 Random(Generator & generator, Distribution & distribution, T length = 1) {
             const T theta = distribution(generator);
             return Vector2(std::cos(theta) * length, std::sin(theta) * length);
         }
@@ -169,7 +186,7 @@ namespace JMP
 
         // Returns the closest point on a circle that intersects the ray.
         // Returns a NaN vector if there is no intersection.
-        Vector2<T> intersect_circle(Vector2<T> const & origin, T radius) {
+        Vector2<T> intersect_circle(Vector2<T> const & origin, T radius) const {
             Vector2<T> U = origin - _position;
             Vector2<T> U1 = U.project_on(_direction);
             Vector2<T> U2 = U - U1;
