@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <cmath>
 #include <random>
+#include <optional>
 
 namespace JMP
 {
@@ -185,12 +186,17 @@ namespace JMP
         }
 
         // Returns the closest point on a circle that intersects the ray.
-        // Returns a NaN vector if there is no intersection.
-        Vector2<T> intersect_circle(Vector2<T> const & origin, T radius) const {
+        // Returns an empty std::optional if there is no intersection.
+        std::optional<Vector2<T>> intersect_circle(Vector2<T> const & origin, T radius) const {
             Vector2<T> U = origin - _position;
             Vector2<T> U1 = U.project_on(_direction);
             Vector2<T> U2 = U - U1;
             T d = U2.magnitude();
+            
+            if (d > radius) {
+                return {};
+            }
+
             T m = std::sqrt(radius * radius - d * d);
             Vector2<T> p = _position + U1 + _direction * m;
 
