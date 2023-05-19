@@ -141,8 +141,8 @@ namespace JMP
 
         Vector2 reflect(Vector2 const & normal) const {
             const T dot_prod = dot(normal);
-            const Vector2 proj = normal * dot_prod;
-            return Vector2(2 * proj._x - _x, 2 * proj._y - _y);
+            const Vector2 proj = normal * dot_prod * 2;
+            return *this - proj;
         }
 
         Vector2 rotate(T radians) const {
@@ -153,6 +153,12 @@ namespace JMP
             return std::isnan(_x) || std::isnan(_y);
         }
     };
+
+    template <typename T>
+    std::ostream& operator << ( std::ostream& outs, const Vector2<T> & v)
+    {
+        return outs << "(" << v.x() << "," << v.y() << ")";
+    }
 
     template <typename T>
     class Ray2 {
